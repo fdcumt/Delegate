@@ -43,8 +43,13 @@ public:
 
 };
 
+class baseClass
+{
+public:
 
-class Test
+};
+
+class Test :public baseClass
 {
 public:
 	int mmm;
@@ -55,11 +60,13 @@ public:
 int main()
 {
 
+	typedef void (baseClass::*ffffffff)(int);;
+
 	Test test1;
 	Test test2;
-	FuncOfMem<Test, int> funcOfMem;
-	funcOfMem.dynamic_add(&test1, &Test::funcA);
-	funcOfMem.dynamic_add(&test2, &Test::funcA);
+	FuncOfMem<baseClass, int> funcOfMem;
+	funcOfMem.dynamic_add(&test1, static_cast<ffffffff> (&Test::funcA));
+	funcOfMem.dynamic_add(&test2, static_cast<ffffffff> (&Test::funcA));
 	test1.mmm = 10;
 	test2.mmm = 11;
 
