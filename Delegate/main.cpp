@@ -1,27 +1,44 @@
 #include <iostream>
-
+#include <vector>
 using namespace std;
 
 
 template<class _ClassName, class _Param1>
 class FuncOfMem
 {
+
+public:
+	FuncOfMem()
+	{
+		m_delegateList.empty();
+	}
+
 public:
 	typedef void (_ClassName::*PtrMemFuncType)(_Param1 param1);
 
-	PtrMemFuncType m_ptrMemFuncType;
-	_ClassName *m_obj;
-	_Param1 param1;
-
-	void mytest(_ClassName *pObj, PtrMemFuncType pFunc)
+	struct DelegateObj
 	{
-		m_obj = pObj;
-		m_ptrMemFuncType = pFunc;
+		_ClassName *_obj;
+		PtrMemFuncType _ptrMemFuncType;
+	};
+
+	vector<DelegateObj> m_delegateList;
+
+	void dynamic_add(_ClassName *pObj, PtrMemFuncType pFunc)
+	{
+		DelegateObj delegateObj;
+		delegateObj._obj = pObj;
+		delegateObj._ptrMemFuncType = pFunc;
+		m_delegateList.push_back(delegateObj);
 	}
 
 	void invoke(_Param1 param1)
 	{
-		(m_obj->*m_ptrMemFuncType)(param1);
+		for (int i=0; i<m_delegateList.size(); ++i)
+		{
+			DelegateObj& delegateObj = m_delegateList[i];
+			(delegateObj._obj->*(delegateObj._ptrMemFuncType))(param1);
+		}
 	}
 
 };
@@ -39,16 +56,15 @@ int main()
 {
 
 	Test test1;
+	Test test2;
 	FuncOfMem<Test, int> funcOfMem;
-	funcOfMem.mytest(&test1, &Test::funcA);
+	funcOfMem.dynamic_add(&test1, &Test::funcA);
+	funcOfMem.dynamic_add(&test2, &Test::funcA);
 	test1.mmm = 10;
+	test2.mmm = 11;
 
 
 	funcOfMem.invoke(3);
-
-
-
-
 
 	system("pause");
 	return 0;
