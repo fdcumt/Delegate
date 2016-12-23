@@ -3,4 +3,14 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Filter Include="SimpleDelegate">
+      <UniqueIdentifier>{d7a6cb6d-8cf9-483f-b584-2ef0b855cc94}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="SimpleDelegate\SimpleDelegate.h">
+      <Filter>SimpleDelegate</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
