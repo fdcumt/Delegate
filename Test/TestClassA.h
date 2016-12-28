@@ -1,5 +1,5 @@
 #pragma once
-#include "SimpleDelegate.h"
+#include "../Delegate/SimpleDelegate/SimpleDelegate.h"
 
 class TestB;
 
