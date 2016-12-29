@@ -3,19 +3,19 @@
 
 #include <vector>
 
-template< class _Param >
+template< class ..._Param >
 class BaseFuncPtr
 {
 public:
-	virtual void invoke(_Param) = 0;
+	virtual void invoke(_Param...) = 0;
 };
   
 
-template< class _ClassName, class _Param>
-class FuncOfMemPtr : public BaseFuncPtr<_Param>
+template< class _ClassName, class ..._Param>
+class FuncOfMemPtr : public BaseFuncPtr<_Param...>
 {
 public:
-	typedef void (_ClassName::*PtrFuncOfMem)(_Param);
+	typedef void (_ClassName::*PtrFuncOfMem)(_Param...);
 
 public:
 	FuncOfMemPtr(_ClassName *InObj, PtrFuncOfMem InPtrFuncOfMem)
@@ -24,11 +24,11 @@ public:
 		m_ptrFuncOfMem = InPtrFuncOfMem;
 	}
 
-	virtual void invoke(_Param InParam) override
+	virtual void invoke(_Param... InParam) override
 	{
 		if (m_obj && m_ptrFuncOfMem)
 		{
-			(m_obj->*m_ptrFuncOfMem)(InParam);
+			(m_obj->*m_ptrFuncOfMem)(InParam...);
 		}
 	}
 
@@ -37,11 +37,11 @@ private:
 	PtrFuncOfMem m_ptrFuncOfMem;
 };
 
-template<class _Param>
-class FuncOfNoneMemPtr : public BaseFuncPtr<_Param>
+template<class ..._Param>
+class FuncOfNoneMemPtr : public BaseFuncPtr<_Param...>
 {
 public:
-	typedef void(*PtrOfNoneFunc)(_Param);
+	typedef void(*PtrOfNoneFunc)(_Param...);
 
 public:
 	FuncOfNoneMemPtr(PtrOfNoneFunc InPtrFunc)
@@ -49,11 +49,11 @@ public:
 		m_ptrFuncOfNoneMem = InPtrFunc;
 	}
 
-	virtual void invoke(_Param InParam) override
+	virtual void invoke(_Param... InParam) override
 	{
 		if (m_ptrFuncOfNoneMem)
 		{
-			(*m_ptrFuncOfNoneMem)(InParam);
+			(*m_ptrFuncOfNoneMem)(InParam...);
 		}
 	}
 
@@ -61,7 +61,7 @@ private:
 	PtrOfNoneFunc m_ptrFuncOfNoneMem;
 };
 
-template<class _Param1>
+template<class ..._Param>
 class FuncOfMemManager
 {
 public:
@@ -74,7 +74,7 @@ public:
 	{
 		for (int i = 0; i < m_delegateList.size(); ++i)
 		{
-			BaseFuncPtr<_Param1>* ptr = m_delegateList[i];
+			BaseFuncPtr<_Param...>* ptr = m_delegateList[i];
 			if (ptr)
 			{
 				delete ptr;
@@ -84,27 +84,27 @@ public:
 
 public:
 	template< class _ClassName>
-	void AddDynamic(_ClassName *pObj, void (_ClassName::*pFuncOfMem)(_Param1))
+	void AddDynamic(_ClassName *pObj, void (_ClassName::*pFuncOfMem)(_Param...))
 	{
-		BaseFuncPtr<_Param1>* ptr = new FuncOfMemPtr<_ClassName, _Param1>(pObj, pFuncOfMem);
+		BaseFuncPtr<_Param...>* ptr = new FuncOfMemPtr<_ClassName, _Param...>(pObj, pFuncOfMem);
 		m_delegateList.push_back(ptr);
 	}
 
-	void AddDynamic(void (*pFuncOfNoneMem)(_Param1))
+	void AddDynamic(void (*pFuncOfNoneMem)(_Param...))
 	{
-		BaseFuncPtr<_Param1>* ptr = new FuncOfNoneMemPtr<_Param1>(pFuncOfNoneMem);
+		BaseFuncPtr<_Param...>* ptr = new FuncOfNoneMemPtr<_Param...>(pFuncOfNoneMem);
 		m_delegateList.push_back(ptr);
 	}
 
-	void Broadcast(_Param1 param1)
+	void Broadcast(_Param... param1)
 	{
 		for (int i = 0; i < m_delegateList.size(); ++i)
 		{
-			BaseFuncPtr<_Param1>* ptr = m_delegateList[i];
-			ptr->invoke(param1);
+			BaseFuncPtr<_Param...>* ptr = m_delegateList[i];
+			ptr->invoke(param1...);
 		}
 	}
 
 private:
-	std::vector<BaseFuncPtr<_Param1>*> m_delegateList;
+	std::vector<BaseFuncPtr<_Param...>*> m_delegateList;
 };
