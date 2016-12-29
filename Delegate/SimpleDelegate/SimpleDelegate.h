@@ -9,7 +9,7 @@ class BaseFuncPtr
 public:
 	virtual void invoke(_Param) = 0;
 };
-
+  
 
 template< class _ClassName, class _Param>
 class FuncOfMemPtr : public BaseFuncPtr<_Param>
