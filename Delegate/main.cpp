@@ -10,6 +10,11 @@ public:
 	int b;
 };
 
+void GloabalFunc(MyClass inClass)
+{
+	std::cout<<"GloabalFunc::"<< inClass.a <<endl;
+}
+
 class Test 
 {
 public:
@@ -36,6 +41,7 @@ int main()
 	FuncOfMemManager<MyClass> funcOfMemManager;
 	funcOfMemManager.AddDynamic(&test1, &Test::funcA);
 	funcOfMemManager.AddDynamic(&test2, &TestA::abc);
+	funcOfMemManager.AddDynamic(&GloabalFunc);
 	test1.mmm = 10;
 	test2.mmm = 777;
 	MyClass myClass;

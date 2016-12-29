@@ -38,27 +38,27 @@ private:
 };
 
 template<class _Param>
-class FuncPtr
+class FuncOfNoneMemPtr : public BaseFuncPtr<_Param>
 {
 public:
-	typedef void(*PtrFunc)(_Param);
+	typedef void(*PtrOfNoneFunc)(_Param);
 
 public:
-	FuncPtr(PtrFunc InPtrFunc)
+	FuncOfNoneMemPtr(PtrOfNoneFunc InPtrFunc)
 	{
-		m_ptrFunc = InPtrFunc;
+		m_ptrFuncOfNoneMem = InPtrFunc;
 	}
 
 	virtual void invoke(_Param InParam) override
 	{
-		if (m_ptrFuncOfMem)
+		if (m_ptrFuncOfNoneMem)
 		{
-			(*m_ptrFuncOfMem)(InParam);
+			(*m_ptrFuncOfNoneMem)(InParam);
 		}
 	}
 
 private:
-	PtrFunc m_ptrFunc;
+	PtrOfNoneFunc m_ptrFuncOfNoneMem;
 };
 
 template<class _Param1>
@@ -87,6 +87,12 @@ public:
 	void AddDynamic(_ClassName *pObj, void (_ClassName::*pFuncOfMem)(_Param1))
 	{
 		BaseFuncPtr<_Param1>* ptr = new FuncOfMemPtr<_ClassName, _Param1>(pObj, pFuncOfMem);
+		m_delegateList.push_back(ptr);
+	}
+
+	void AddDynamic(void (*pFuncOfNoneMem)(_Param1))
+	{
+		BaseFuncPtr<_Param1>* ptr = new FuncOfNoneMemPtr<_Param1>(pFuncOfNoneMem);
 		m_delegateList.push_back(ptr);
 	}
 
