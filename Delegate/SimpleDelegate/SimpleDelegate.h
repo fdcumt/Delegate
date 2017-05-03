@@ -8,6 +8,7 @@ class BaseFuncPtr
 {
 public:
 	virtual void invoke(_Param...) = 0;
+	virtual ~BaseFuncPtr() {}
 };
   
 
