@@ -1,5 +1,14 @@
-
 #pragma once
+
+
+/*
+	使用的时候请注明来源 
+	author: fuzongqiong
+	github: https://github.com/fdcumt/Delegate
+*/
+
+
+
 
 #include <vector>
 
