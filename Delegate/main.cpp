@@ -28,7 +28,7 @@ public:
 class TestA
 {
 public:
-	FuncOfMemManager<MyClass> funcOfMemManager;
+	SimpleMultiDelegate<MyClass> funcOfMemManager;
 	int mmm;
 	void abc(MyClass a, int i) 
 	{ 
@@ -43,18 +43,29 @@ int main()
 {
 	Test test1;
 	TestA test2;
-	FuncOfMemManager<MyClass, int> funcOfMemManager;
-	funcOfMemManager.AddDynamic(&test1, &Test::funcA);
-	funcOfMemManager.AddDynamic(&test2, &TestA::abc);
-	funcOfMemManager.AddDynamic(&GloabalFunc);
+	SimpleMultiDelegate<MyClass, int> test;
+	test.SimpleAddDynamic(&test1, &Test::funcA);
+	test.SimpleAddDynamic(&test2, &TestA::abc);
+	test.SimpleAddDynamic(&GloabalFunc);
 	test1.mmm = 10;
 	test2.mmm = 777;
 	MyClass myClass;
 	myClass.a = 1;
 	myClass.b = 2;
 
+	test.Broadcast(myClass, 666);
 
-	funcOfMemManager.Broadcast(myClass, 666);
+	test.SimpleRemoveDynamic(&test2, &TestA::abc);
+
+	test.Broadcast(myClass, 777);
+
+	test.SimpleRemoveDynamic(&GloabalFunc);
+	test.Broadcast(myClass, 888);
+
+
+	test.SimpleRemoveDynamic(&test1, &Test::funcA);
+
+	test.Broadcast(myClass, 999);
 
 	system("pause");
 	return 0;

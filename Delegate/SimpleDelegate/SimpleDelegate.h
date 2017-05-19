@@ -1,15 +1,5 @@
 #pragma once
 
-
-/*
-	使用的时候请注明来源 
-	author: fuzongqiong
-	github: https://github.com/fdcumt/Delegate
-*/
-
-
-
-
 #include <vector>
 
 template< class ..._Param >
@@ -17,9 +7,19 @@ class BaseFuncPtr
 {
 public:
 	virtual void invoke(_Param...) = 0;
+	virtual bool equal(BaseFuncPtr*) = 0;
+
+public:
+	BaseFuncPtr(bool InIsFuncOfMemPtr)
+		:m_isFuncOfMemPtr(InIsFuncOfMemPtr)
+	{
+	}
 	virtual ~BaseFuncPtr() {}
+
+public:
+	bool m_isFuncOfMemPtr;
 };
-  
+
 
 template< class _ClassName, class ..._Param>
 class FuncOfMemPtr : public BaseFuncPtr<_Param...>
@@ -29,9 +29,23 @@ public:
 
 public:
 	FuncOfMemPtr(_ClassName *InObj, PtrFuncOfMem InPtrFuncOfMem)
+		:BaseFuncPtr(true)
 	{
 		m_obj = InObj;
 		m_ptrFuncOfMem = InPtrFuncOfMem;
+	}
+
+	virtual bool equal(BaseFuncPtr* InBasePtr) override
+	{
+		if (InBasePtr->m_isFuncOfMemPtr == m_isFuncOfMemPtr)
+		{
+			FuncOfMemPtr<_ClassName, _Param...> *ptr = (FuncOfMemPtr<_ClassName, _Param...> *) InBasePtr;
+			return m_obj == ptr->m_obj && m_ptrFuncOfMem == ptr->m_ptrFuncOfMem;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	virtual void invoke(_Param... InParam) override
@@ -55,8 +69,22 @@ public:
 
 public:
 	FuncOfNoneMemPtr(PtrOfNoneFunc InPtrFunc)
+		:BaseFuncPtr(false)
 	{
 		m_ptrFuncOfNoneMem = InPtrFunc;
+	}
+
+	virtual bool equal(BaseFuncPtr* InBasePtr) override
+	{
+		if (m_isFuncOfMemPtr == InBasePtr->m_isFuncOfMemPtr)
+		{
+			FuncOfNoneMemPtr<_Param...> *ptr = (FuncOfNoneMemPtr<_Param...> *) InBasePtr;
+			return m_ptrFuncOfNoneMem == ptr->m_ptrFuncOfNoneMem;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	virtual void invoke(_Param... InParam) override
@@ -72,15 +100,15 @@ private:
 };
 
 template<class ..._Param>
-class FuncOfMemManager
+class SimpleMultiDelegate
 {
 public:
-	FuncOfMemManager()
+	SimpleMultiDelegate()
 	{
 		m_delegateList.empty();
 	}
 
-	~FuncOfMemManager()
+	~SimpleMultiDelegate()
 	{
 		for (int i = 0; i < m_delegateList.size(); ++i)
 		{
@@ -94,27 +122,62 @@ public:
 
 public:
 	template< class _ClassName>
-	void AddDynamic(_ClassName *pObj, void (_ClassName::*pFuncOfMem)(_Param...))
+	void SimpleAddDynamic(_ClassName *pObj, void (_ClassName::*pFuncOfMem)(_Param...))
 	{
 		BaseFuncPtr<_Param...>* ptr = new FuncOfMemPtr<_ClassName, _Param...>(pObj, pFuncOfMem);
 		m_delegateList.push_back(ptr);
 	}
 
-	void AddDynamic(void (*pFuncOfNoneMem)(_Param...))
+	template< class _ClassName>
+	void SimpleRemoveDynamic(_ClassName *pObj, void (_ClassName::*pFuncOfMem)(_Param...))
+	{
+		FuncOfMemPtr<_ClassName, _Param...> funcOfMemPtr(pObj, pFuncOfMem);
+		BaseFuncPtr<_Param...>* ptr = &funcOfMemPtr;
+		for (std::vector<BaseFuncPtr<_Param...>*>::iterator it = m_delegateList.begin(); it != m_delegateList.end(); ++it)
+		{
+			BaseFuncPtr<_Param...>*item = *it;
+			if (item->equal(ptr))
+			{
+				m_delegateList.erase(it);
+				return;
+			}
+		}
+	}
+
+	void SimpleAddDynamic(void(*pFuncOfNoneMem)(_Param...))
 	{
 		BaseFuncPtr<_Param...>* ptr = new FuncOfNoneMemPtr<_Param...>(pFuncOfNoneMem);
 		m_delegateList.push_back(ptr);
 	}
 
+	void SimpleRemoveDynamic(void(*pFuncOfNoneMem)(_Param...))
+	{
+		FuncOfNoneMemPtr<_Param...> funcOfNoneMemPtr(pFuncOfNoneMem);
+		BaseFuncPtr<_Param...>* ptr = &funcOfNoneMemPtr;
+		for (std::vector<BaseFuncPtr<_Param...>*>::iterator it = m_delegateList.begin(); it != m_delegateList.end(); ++it)
+		{
+			BaseFuncPtr<_Param...>*item = *it;
+			if (item->equal(ptr))
+			{
+				m_delegateList.erase(it);
+				return;
+			}
+		}
+	}
+
 	void Broadcast(_Param... param1)
 	{
-		for (int i = 0; i < m_delegateList.size(); ++i)
+		for (BaseFuncPtr<_Param...>*& pDelegateItem : m_delegateList)
 		{
-			BaseFuncPtr<_Param...>* ptr = m_delegateList[i];
-			ptr->invoke(param1...);
+			pDelegateItem->invoke(param1...);
 		}
 	}
 
 private:
 	std::vector<BaseFuncPtr<_Param...>*> m_delegateList;
 };
+
+
+
+
+
